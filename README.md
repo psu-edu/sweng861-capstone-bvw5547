@@ -2,9 +2,9 @@
 
 Campus Works is a job board for internal campus positions such as research assistantships and TA roles. Professors post openings and review applicants. Students build a profile and apply with a resume link once they meet the GPA requirement.
 
-**Author:** Bin Wu (bvw5547)
+**Author:** Bin Wu
 
-**Course:** SWENG 861, Penn State University
+**Course:** SWENG-861
 
 ## Project Category
 
@@ -61,9 +61,6 @@ Users can log in with a LinkedIn account instead of creating another password.
 A professor can also share an opening to their LinkedIn feed, listed above as
 a nice to have.
 
-One limit shapes the design. LinkedIn's public API does not return work
-history, education, or skills. Students enter major, GPA, and the resume link
-themselves.
 
 ## Repository Structure
 
@@ -83,9 +80,7 @@ The remaining folders from the course starter template (`.github/workflows`,
 
 ## How to Run
 
-Only placeholders exist right now. This is the Week 2 proposal check in.
-
-The API stub runs with no dependencies:
+Only placeholders exist right now. The API stub runs with no dependencies:
 
 ```bash
 node src/server/index.js

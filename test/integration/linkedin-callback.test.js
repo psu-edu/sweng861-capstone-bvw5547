@@ -93,6 +93,7 @@ test('a LinkedIn professor can share their own opening', async () => {
 
   expect(res.status).toBe(200);
   expect(res.body.postId).toBe('urn:li:share:1');
+  expect(res.body.postUrl).toBe('https://www.linkedin.com/feed/update/urn:li:share:1/');
   expect(res.body.url).toBe(`http://localhost:5173/jobs/${job.body.id}`);
   const [accessToken, linkedinId, text] = linkedin.shareOpening.mock.calls[0];
   expect(accessToken).toBe('li-token');

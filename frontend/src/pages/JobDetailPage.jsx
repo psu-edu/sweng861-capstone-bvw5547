@@ -17,6 +17,7 @@ export default function JobDetailPage() {
   const [profiles, setProfiles] = useState({})
   const [notice, setNotice] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [postUrl, setPostUrl] = useState(null)
 
   const isOwner = user.role === 'professor' && job && job.professorId === user.id
 
@@ -66,6 +67,7 @@ export default function JobDetailPage() {
   function share() {
     return act(async () => {
       const result = await api(`/api/jobs/${job.id}/share`, { method: 'POST' })
+      setPostUrl(result.postUrl)
       setNotice({ kind: 'ok', text: `Shared on LinkedIn. Post id ${result.postId}` })
     })
   }
@@ -124,6 +126,9 @@ export default function JobDetailPage() {
           {notice && (
             <div className={notice.kind === 'ok' ? 'toast' : 'error-box'} role={notice.kind === 'ok' ? 'status' : 'alert'}>
               {notice.text}
+              {notice.kind === 'ok' && postUrl && (
+                <>{' '}<a href={postUrl} target="_blank" rel="noreferrer">View post</a></>
+              )}
             </div>
           )}
 

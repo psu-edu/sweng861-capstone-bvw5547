@@ -62,7 +62,7 @@ test('owner reviews an applicant, views the profile, shares, and closes', async 
     { path: '/api/jobs/job-1/applications', body: [application] },
     { path: '/api/profiles/stu-1', body: { major: 'Computer Science', gpa: 3.7, skills: ['python', 'sql'] } },
     { method: 'PATCH', path: '/api/applications/app-1/status', body: (o) => ({ ...application, status: JSON.parse(o.body).status }) },
-    { method: 'POST', path: '/api/jobs/job-1/share', body: { postId: 'urn:li:share:9' } },
+    { method: 'POST', path: '/api/jobs/job-1/share', body: { postId: 'urn:li:share:9', postUrl: 'https://www.linkedin.com/feed/update/urn:li:share:9/' } },
     { method: 'POST', path: '/api/jobs/job-1/close', body: { ...job, status: 'closed' } }
   ])
   renderAt('/jobs/job-1', { token: fakeToken('professor', 'prof-1') })
@@ -81,6 +81,7 @@ test('owner reviews an applicant, views the profile, shares, and closes', async 
 
   await userEvent.click(screen.getByRole('button', { name: 'Share on LinkedIn' }))
   expect(await screen.findByRole('status')).toHaveTextContent('Shared on LinkedIn. Post id urn:li:share:9')
+  expect(screen.getByRole('link', { name: 'View post' })).toHaveAttribute('href', 'https://www.linkedin.com/feed/update/urn:li:share:9/')
 
   await userEvent.click(screen.getByRole('button', { name: 'Close opening' }))
   expect(await screen.findByText('closed')).toBeInTheDocument()

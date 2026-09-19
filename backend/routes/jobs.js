@@ -184,7 +184,7 @@ router.get('/:id/applications', loadJob, requireOwner, async (req, res, next) =>
  *     security: [{ bearerAuth: [] }]
  *     parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
  *     responses:
- *       200: { description: Posted, returns the LinkedIn post id }
+ *       200: { description: Posted, returns the LinkedIn post id and a link to the post }
  *       403: { description: Not your opening }
  *       409: { description: Sign in with LinkedIn first }
  *       502: { description: LinkedIn rejected the post }
@@ -202,7 +202,7 @@ router.post('/:id/share', loadJob, requireOwner, async (req, res, next) => {
       const postId = await linkedin.shareOpening(user.linkedinToken, user.linkedinId, text, url);
       linkedinShares.inc({ result: 'success' });
       req.log.info({ event: 'job.shared', jobId: req.job.id, postId }, 'job shared on linkedin');
-      res.json({ postId, text, url });
+      res.json({ postId, postUrl: `https://www.linkedin.com/feed/update/${postId}/`, text, url });
     } catch (error) {
       linkedinShares.inc({ result: 'failure' });
       throw error;

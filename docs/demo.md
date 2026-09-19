@@ -2,12 +2,12 @@
 
 About 6 minutes. Everything below runs from the compose stack after the seed step in the README.
 
-## Before recording
+## Before the demo
 
 1. `docker compose -f docker/docker-compose.yml up -d --build`
 2. `docker compose -f docker/docker-compose.yml exec api node scripts/seed.js`
 3. Open four tabs: http://localhost:8080, http://localhost:3000/docs, http://localhost:3001/d/campus-works, and a terminal with `docker compose -f docker/docker-compose.yml logs -f api`.
-4. Log out of any LinkedIn session in the browser you record with, so the LinkedIn consent screen shows.
+4. Log out of any LinkedIn session in the browser you use, so the LinkedIn consent screen shows.
 
 ## Flow
 
@@ -26,6 +26,6 @@ About 6 minutes. Everything below runs from the compose stack after the seed ste
 
 ## Fallbacks
 
-- If LinkedIn login fails on the day, log in as prof@psu.edu with the password and say the LinkedIn path is covered by the mocked flow tests. Show `test/integration/linkedin-callback.test.js`.
+- If LinkedIn login fails, log in as prof@psu.edu with the password and say the LinkedIn path is covered by the mocked flow tests. Show `test/integration/linkedin-callback.test.js`.
 - If the share returns 502, LinkedIn is rate limiting or the token expired. Sign in through LinkedIn again and retry once.
 - If Grafana panels are empty, click around the app for a minute and set the time range to the last 15 minutes.

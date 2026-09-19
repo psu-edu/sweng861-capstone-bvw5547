@@ -1,4 +1,4 @@
-# Runs the API, MongoDB, Prometheus, and Grafana together.
+# Runs the web client, the API, MongoDB, Prometheus, and Grafana together.
 # Usage from the repo root: docker compose -f docker/docker-compose.yml up -d --build
 services:
   mongo:
@@ -16,8 +16,18 @@ services:
     env_file: ../.env
     environment:
       MONGODB_URI: mongodb://mongo:27017/campusworks
+      FRONTEND_URL: http://localhost:8080
     depends_on:
       - mongo
+
+  web:
+    build:
+      context: ../frontend
+    image: campus-works-web:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
 
   prometheus:
     image: prom/prometheus:v3.5.0

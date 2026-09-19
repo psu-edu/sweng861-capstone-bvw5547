@@ -1,0 +1,45 @@
+{
+  "name": "campus-works",
+  "version": "1.0.0",
+  "description": "Campus Works: a job board for research assistant and TA openings",
+  "main": "backend/index.js",
+  "scripts": {
+    "start": "node backend/index.js",
+    "dev": "node backend/index.js",
+    "seed": "node scripts/seed.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "author": "bin wu",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.3",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2"
+  },
+  "overrides": {
+    "mongodb": "7.5.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/test"],
+    "setupFiles": ["<rootDir>/test/setup-env.js"],
+    "testTimeout": 30000,
+    "collectCoverageFrom": ["backend/**/*.js", "!backend/index.js", "!backend/swagger.js"],
+    "coverageDirectory": "coverage",
+    "coverageThreshold": { "global": { "lines": 80, "statements": 80 } }
+  }
+}

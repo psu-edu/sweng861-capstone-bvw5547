@@ -33,9 +33,12 @@ async function main() {
   for (const item of jobs) {
     const owner = byEmail[item.owner];
     const existing = await db.listJobs({ professorId: owner.id, title: item.title });
+    const { owner: _owner, ...data } = item;
     if (existing.length === 0) {
-      const { owner: _owner, ...data } = item;
-      await db.createJob({ ...data, professorId: owner.id });
+      await db.createJob({ ...data, professorId: owner.id, professorName: owner.name });
+    } else if (!existing[0].professorName) {
+      existing[0].professorName = owner.name;
+      await db.saveJob(existing[0]);
     }
   }
   console.log(`Seeded ${users.length} accounts and ${jobs.length} openings. Password for every account: ${password}`);

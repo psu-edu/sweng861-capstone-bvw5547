@@ -31,6 +31,7 @@ const profileSchema = new mongoose.Schema({
 
 const jobSchema = new mongoose.Schema({
   professorId: { type: String, required: true, index: true },
+  professorName: { type: String, required: true, trim: true },
   title: { type: String, required: true, trim: true },
   department: { type: String, required: true, trim: true },
   type: { type: String, enum: JOB_TYPES, required: true },

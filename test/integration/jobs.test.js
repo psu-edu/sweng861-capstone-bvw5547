@@ -27,6 +27,7 @@ test('professor creates an opening and reads it back', async () => {
 
   expect(job.status).toBe('open');
   expect(job.professorId).toBe(prof.id);
+  expect(job.professorName).toBe('Prof One');
   expect(res.status).toBe(200);
   expect(res.body.title).toBe(jobBody.title);
 });

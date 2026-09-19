@@ -116,7 +116,7 @@ export default function JobDetailPage() {
             <span className={`badge badge-${job.status}`}>{job.status}</span>
           </p>
           <p className="muted">
-            {job.department} · Min GPA {job.minGpa.toFixed(2)}
+            {job.department} · Posted by {isOwner ? 'you' : job.professorName} · Min GPA {job.minGpa.toFixed(2)}
             {job.hoursPerWeek ? ` · ${job.hoursPerWeek} hrs/week` : ''}
             {job.pay ? ` · ${job.pay}` : ''}
           </p>

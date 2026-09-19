@@ -38,6 +38,6 @@ export function renderAt(path, { token } = {}) {
 }
 
 export const jobs = [
-  { id: 'job-1', professorId: 'prof-1', title: 'Research assistant, vision lab', department: 'Computer Science', type: 'RA', hoursPerWeek: 10, pay: '$16/hr', minGpa: 3.5, skills: ['python'], description: 'Label data.', status: 'open', createdAt: '2026-09-01T00:00:00.000Z' },
-  { id: 'job-2', professorId: 'prof-1', title: 'TA for calculus', department: 'Mathematics', type: 'TA', hoursPerWeek: null, pay: null, minGpa: 2.5, skills: [], description: 'Lead recitation.', status: 'open', createdAt: '2026-09-02T00:00:00.000Z' }
+  { id: 'job-1', professorId: 'prof-1', professorName: 'Dr. Maria Chen', title: 'Research assistant, vision lab', department: 'Computer Science', type: 'RA', hoursPerWeek: 10, pay: '$16/hr', minGpa: 3.5, skills: ['python'], description: 'Label data.', status: 'open', createdAt: '2026-09-01T00:00:00.000Z' },
+  { id: 'job-2', professorId: 'prof-1', professorName: 'Dr. Maria Chen', title: 'TA for calculus', department: 'Mathematics', type: 'TA', hoursPerWeek: null, pay: null, minGpa: 2.5, skills: [], description: 'Lead recitation.', status: 'open', createdAt: '2026-09-02T00:00:00.000Z' }
 ]

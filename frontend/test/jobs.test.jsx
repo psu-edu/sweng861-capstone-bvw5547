@@ -12,6 +12,7 @@ test('shows the spinner then the openings with type, status, and gpa', async () 
   expect(screen.getByText('TA for calculus')).toBeInTheDocument()
   expect(screen.getByText(/Min GPA 3.50 · 10 hrs\/week · \$16\/hr/)).toBeInTheDocument()
   expect(screen.getAllByRole('link', { name: 'View details' })).toHaveLength(2)
+  expect(screen.getAllByText(/Posted by Dr. Maria Chen/)).toHaveLength(2)
 })
 
 test('sends the filters as query parameters', async () => {
@@ -55,6 +56,7 @@ test('my openings asks for mine and shows the post button', async () => {
 
   expect(await screen.findByRole('heading', { name: 'My openings' })).toBeInTheDocument()
   expect(screen.getByText('closed')).toBeInTheDocument()
+  expect(screen.getByText(/Posted by you/)).toBeInTheDocument()
   const links = screen.getAllByRole('link', { name: 'Post opening' })
   expect(links).toHaveLength(2)
   expect(links.every((link) => link.getAttribute('href') === '/jobs/new')).toBe(true)

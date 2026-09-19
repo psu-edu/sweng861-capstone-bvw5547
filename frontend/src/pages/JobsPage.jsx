@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client.js'
+import { useAuth } from '../auth/AuthContext.jsx'
 import Spinner from '../components/Spinner.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 
 const emptyFilters = { q: '', department: '', type: '', maxGpa: '' }
 
 export default function JobsPage({ mine = false }) {
+  const { user } = useAuth()
   const [filters, setFilters] = useState(emptyFilters)
   const [jobs, setJobs] = useState(null)
   const [error, setError] = useState(null)
@@ -74,7 +76,7 @@ export default function JobsPage({ mine = false }) {
                 <span className={`badge badge-${job.type}`}>{job.type}</span>{' '}
                 <span className={`badge badge-${job.status}`}>{job.status}</span>
               </p>
-              <p className="muted">{job.department}</p>
+              <p className="muted">{job.department} · Posted by {job.professorId === user.id ? 'you' : job.professorName}</p>
               <p className="muted">Min GPA {job.minGpa.toFixed(2)}{job.hoursPerWeek ? ` · ${job.hoursPerWeek} hrs/week` : ''}{job.pay ? ` · ${job.pay}` : ''}</p>
               <Link to={`/jobs/${job.id}`} className="button">View details</Link>
             </li>

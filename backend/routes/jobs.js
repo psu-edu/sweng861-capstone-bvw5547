@@ -89,7 +89,7 @@ router.post('/', requireRole('professor'), async (req, res, next) => {
   try {
     const { errors, value } = validateJob(req.body);
     if (errors.length) return res.status(400).json({ error: 'Bad Request', message: errors[0], errors });
-    const job = await db.createJob({ ...value, professorId: req.user.id });
+    const job = await db.createJob({ ...value, professorId: req.user.id, professorName: req.user.name });
     jobsCreated.inc();
     req.log.info({ event: 'job.created', jobId: job.id, professorId: req.user.id }, 'job created');
     res.status(201).json(job);

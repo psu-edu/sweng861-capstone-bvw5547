@@ -12,6 +12,75 @@ Research assistant and TA openings are posted wherever each professor chooses, s
 - A professor signed in through LinkedIn can post an opening to their LinkedIn feed with one click.
 - Structured JSON logs, Prometheus metrics, health endpoints, and a Grafana dashboard.
 
+## Design
+
+Five containers. The browser only talks to nginx. nginx serves the React app and forwards `/api` and `/auth` to the API. The API is the only part that talks to MongoDB and LinkedIn. Prometheus scrapes the API and Grafana reads from Prometheus.
+
+```mermaid
+flowchart LR
+  Browser["Browser<br/>React client"]
+  Web["web<br/>nginx, static files,<br/>proxies /api and /auth"]
+  API["api<br/>Express"]
+  Prom["Prometheus"]
+  Graf["Grafana"]
+  Mongo[("MongoDB")]
+  LI["LinkedIn<br/>OIDC and Share API"]
+
+  Browser -->|HTTP| Web
+  Web -->|/api, /auth| API
+  API -->|/metrics, scraped every 5s| Prom
+  Prom --> Graf
+  API --> Mongo
+  API -->|token exchange, userinfo, ugcPosts| LI
+  Browser -.->|OAuth redirect| LI
+```
+
+Inside the API, routes parse the request and pick a status code. The rules module holds the GPA check, the status transitions, and validation as pure functions. One module talks to MongoDB and one talks to LinkedIn.
+
+Four collections. An application stores the GPA and resume link at apply time, so a later profile edit does not change what the professor reviews. The pair of job id and student id is unique, so a student applies once per opening.
+
+```mermaid
+erDiagram
+  User ||--o| Profile : has
+  User ||--o{ Job : posts
+  User ||--o{ Application : submits
+  Job ||--o{ Application : receives
+
+  User {
+    string email UK
+    string name
+    string role "student | professor"
+    string passwordHash "null for LinkedIn only"
+    string linkedinId
+    string linkedinToken "never serialized"
+  }
+  Profile {
+    string userId UK
+    string major
+    number gpa "0 to 4"
+    string[] skills
+    string resumeUrl
+    string department
+    string contact
+  }
+  Job {
+    string professorId
+    string title
+    string department
+    string type "RA | TA"
+    number minGpa
+    string[] skills
+    string status "open | closed"
+  }
+  Application {
+    string jobId
+    string studentId
+    number gpaAtApply "snapshot"
+    string resumeUrl "snapshot"
+    string status "submitted | reviewed | accepted | rejected"
+  }
+```
+
 ## Run it with Docker
 
 Prerequisites: Docker Desktop. Nothing else.

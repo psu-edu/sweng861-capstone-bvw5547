@@ -7,18 +7,18 @@ flowchart LR
   Browser["Browser<br/>React client"]
   Web["web<br/>nginx, static files,<br/>proxies /api and /auth"]
   API["api<br/>Express"]
-  Mongo[("MongoDB")]
-  LI["LinkedIn<br/>OIDC and Share API"]
   Prom["Prometheus"]
   Graf["Grafana"]
+  Mongo[("MongoDB")]
+  LI["LinkedIn<br/>OIDC and Share API"]
 
   Browser -->|HTTP| Web
   Web -->|/api, /auth| API
+  API -->|/metrics, scraped every 5s| Prom
+  Prom --> Graf
   API --> Mongo
   API -->|token exchange, userinfo, ugcPosts| LI
   Browser -.->|OAuth redirect| LI
-  Prom -->|scrape /metrics every 5s| API
-  Graf --> Prom
 ```
 
 Five containers. The browser only ever talks to nginx. nginx serves the built React app and forwards `/api` and `/auth` to the API. The API is the only component that talks to MongoDB and LinkedIn. Prometheus scrapes the API, Grafana reads Prometheus.

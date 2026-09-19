@@ -1,0 +1,8 @@
+# Prometheus scrape config for the compose stack. The api service exposes /metrics.
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: campus-works-api
+    static_configs:
+      - targets: ['api:3000']

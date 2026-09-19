@@ -1,0 +1,8 @@
+# Grafana datasource. Points at the prometheus service in the compose stack.
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://prometheus:9090
+    isDefault: true

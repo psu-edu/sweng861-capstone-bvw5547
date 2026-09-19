@@ -1,0 +1,10 @@
+node_modules
+frontend
+test
+coverage
+docker
+scripts
+docs
+.github
+.env
+.git

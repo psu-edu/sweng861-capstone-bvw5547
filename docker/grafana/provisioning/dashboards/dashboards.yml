@@ -1,0 +1,8 @@
+# Grafana loads every dashboard json from the mounted dashboards folder.
+apiVersion: 1
+providers:
+  - name: campus-works
+    folder: ''
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

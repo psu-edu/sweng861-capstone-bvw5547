@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+      - name: Test with coverage gate
+        run: npm run test:coverage
+
+  frontend:
+    name: Frontend build and test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+      - name: Build
+        run: npm run build
+      - name: Test with coverage gate
+        run: npm run test:coverage
+
+  package:
+    name: Build, smoke test, and scan image
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: |
+          docker build -f docker/Dockerfile \
+            -t campus-works-api:${{ github.sha }} \
+            -t campus-works-api:latest .
+      - name: Smoke test image
+        run: |
+          cleanup() { docker rm -f ci-api ci-mongo >/dev/null 2>&1 || true; docker network rm ci >/dev/null 2>&1 || true; }
+          cleanup
+          docker network create ci
+          docker run -d --network ci --name ci-mongo mongo:8
+          docker run -d --network ci --name ci-api \
+            -e MONGODB_URI=mongodb://ci-mongo:27017/campusworks \
+            -e JWT_SECRET=ci-only \
+            campus-works-api:latest
+          for i in $(seq 1 20); do
+            if docker run --rm --network ci curlimages/curl:8.10.1 -fs http://ci-api:3000/health; then echo; cleanup; exit 0; fi
+            sleep 2
+          done
+          docker logs ci-api
+          cleanup
+          exit 1
+      - name: Scan image for vulnerabilities
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.74.0 image \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            campus-works-api:latest

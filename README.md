@@ -12,8 +12,6 @@ Research assistant and TA openings are posted wherever each professor chooses, s
 - A professor signed in through LinkedIn can post an opening to their LinkedIn feed with one click.
 - Structured JSON logs, Prometheus metrics, health endpoints, and a Grafana dashboard.
 
-Design docs live in [docs/](docs/): requirements, architecture, design decisions, testing, and the demo script.
-
 ## Run it with Docker
 
 Prerequisites: Docker Desktop. Nothing else.
@@ -81,7 +79,7 @@ npm test
 npm run test:coverage
 ```
 
-Both coverage commands fail below 80 percent lines and statements. See [docs/testing.md](docs/testing.md) for what is covered.
+Both coverage commands fail below 80 percent lines and statements.
 
 ## CI pipeline
 
@@ -108,7 +106,6 @@ act push -W .github/workflows/ci.yml -P ubuntu-latest=catthehacker/ubuntu:act-la
 | `test/`, `frontend/test/` | Backend unit and integration tests, frontend component tests |
 | `docker/` | Dockerfile, compose stack, Prometheus and Grafana config |
 | `scripts/seed.js` | Demo accounts and openings |
-| `docs/` | Requirements, architecture, design decisions, testing, demo script |
 
 ## Secrets
 

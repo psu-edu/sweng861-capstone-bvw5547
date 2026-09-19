@@ -1,6 +1,6 @@
-# Demo script
+# How to demo
 
-Target: 10 to 15 minutes including slides. The demo itself is about 6 minutes. Everything below runs from the compose stack after the seed step in the README.
+About 6 minutes. Everything below runs from the compose stack after the seed step in the README.
 
 ## Before recording
 
@@ -29,10 +29,3 @@ Target: 10 to 15 minutes including slides. The demo itself is about 6 minutes. E
 - If LinkedIn login fails on the day, log in as prof@psu.edu with the password and say the LinkedIn path is covered by the mocked flow tests. Show `test/integration/linkedin-callback.test.js`.
 - If the share returns 502, LinkedIn is rate limiting or the token expired. Sign in through LinkedIn again and retry once.
 - If Grafana panels are empty, click around the app for a minute and set the time range to the last 15 minutes.
-
-## Talking points for the video
-
-- Hardest part: the LinkedIn flow. Two products, two scopes, the state cookie, linking an existing account by email, and keeping the posting token out of every response.
-- Most proud of: the rules module. Every business decision is a pure function with a unit test, and the routes read like a checklist.
-- Future work: Redis for sessions and rate limits before scaling out, email on status change, resume upload, browser end to end tests.
-- AI usage: an assistant drafted routes, tests, and docs from my design, and the Docker and CI files carried over from week 6. I ran everything and fixed what broke. The job filter dropped the status filter for an unknown value instead of falling back to open, caught by a unit test. A frontend test matched two links with the same name. The week 6 pipeline draft had a nonexistent action tag and a smoke test that only worked on a laptop. Nothing merged without a green run.

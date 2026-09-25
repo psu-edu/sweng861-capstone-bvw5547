@@ -1,93 +1,181 @@
-# Campus Works (Student Jobs)
+Author Name: Bin Wu
+Course Name: SWENG 861 - Software Construction
+Description: Campus Works. A job board for research assistant and TA openings. Professors post, students apply after a GPA check, LinkedIn handles sign in and sharing.
 
-Campus Works is a job board for internal campus positions such as research assistantships and TA roles. Professors post openings and review applicants. Students build a profile and apply with a resume link once they meet the GPA requirement.
+## What it does
 
-**Author:** Bin Wu
+Research assistant and TA openings are posted wherever each professor chooses, so students miss them and professors screen GPA by hand. Campus Works puts every opening in one list and runs the GPA check before an application goes through.
 
-**Course:** SWENG-861
+- Two roles. Professors post, edit, close, and share openings and review applicants. Students keep a profile and apply.
+- Login with email and password, or with LinkedIn. Both roles can use either.
+- The apply step checks the profile is complete and the GPA meets the opening's minimum. The API refuses with the reason otherwise.
+- A professor signed in through LinkedIn can post an opening to their LinkedIn feed with one click.
+- Structured JSON logs, Prometheus metrics, health endpoints, and a Grafana dashboard.
 
-## Project Category
+## Design
 
-Campus Project Portfolio. Project J: Campus Works (Student Jobs).
+Five containers. The browser only talks to nginx. nginx serves the React app and forwards `/api` and `/auth` to the API. The API is the only part that talks to MongoDB and LinkedIn. Prometheus scrapes the API and Grafana reads from Prometheus.
 
-## Core Features
+```mermaid
+flowchart LR
+  Browser["Browser<br/>React client"]
+  Web["web<br/>nginx, static files,<br/>proxies /api and /auth"]
+  API["api<br/>Express"]
+  Prom["Prometheus"]
+  Graf["Grafana"]
+  Mongo[("MongoDB")]
+  LI["LinkedIn<br/>OIDC and Share API"]
 
-Must have:
-
-1. Auth. Two user roles. Professors post and manage openings. Students browse
-   and apply. Login with a LinkedIn account is also supported.
-2. Profiles. Students store major, GPA, skills, and a resume link. Professors
-   store department and contact info.
-3. Job board. Professors create, edit, and close openings. Students search and
-   filter open positions.
-4. Applications. The submit application workflow verifies GPA eligibility,
-   stores the resume link, then notifies the professor.
-
-Nice to have:
-
-1. Share an opening. A professor posts an opening to their LinkedIn feed.
-2. Email notification when an application status changes.
-
-## Architecture
-
-```
-React client  ->  Express API  ->  DynamoDB
-                       |
-                       +-- /api/auth
-                       +-- /api/profiles
-                       +-- /api/jobs
-                       +-- /api/applications
+  Browser -->|HTTP| Web
+  Web -->|/api, /auth| API
+  API -->|/metrics, scraped every 5s| Prom
+  Prom --> Graf
+  API --> Mongo
+  API -->|token exchange, userinfo, ugcPosts| LI
+  Browser -.->|OAuth redirect| LI
 ```
 
-One Express app with four route groups, one DynamoDB table each: users,
-profiles, jobs, and applications.
+Inside the API, routes parse the request and pick a status code. The rules module holds the GPA check, the status transitions, and validation as pure functions. One module talks to MongoDB and one talks to LinkedIn.
 
-## Tech Stack
+Four collections. An application stores the GPA and resume link at apply time, so a later profile edit does not change what the professor reviews. The pair of job id and student id is unique, so a student applies once per opening.
 
-| Layer | Choice |
-| --- | --- |
-| Language | JavaScript (Node.js) |
-| Frontend | React with Vite |
-| Backend | Node.js with Express |
-| Data | Amazon DynamoDB (DynamoDB Local for development) |
-| Auth | JWT sessions, LinkedIn login supported |
-| Containers | Docker and Docker Compose |
-| CI/CD | GitHub Actions |
-| Observability | Prometheus and Grafana |
+```mermaid
+erDiagram
+  User ||--o| Profile : has
+  User ||--o{ Job : posts
+  User ||--o{ Application : submits
+  Job ||--o{ Application : receives
 
-## External Integration: LinkedIn
-
-Users can log in with a LinkedIn account instead of creating another password.
-A professor can also share an opening to their LinkedIn feed, listed above as
-a nice to have.
-
-
-## Repository Structure
-
+  User {
+    string email UK
+    string name
+    string role "student | professor"
+    string passwordHash "null for LinkedIn only"
+    string linkedinId
+    string linkedinToken "never serialized"
+  }
+  Profile {
+    string userId UK
+    string major
+    number gpa "0 to 4"
+    string[] skills
+    string resumeUrl
+    string department
+    string contact
+  }
+  Job {
+    string professorId
+    string title
+    string department
+    string type "RA | TA"
+    number minGpa
+    string[] skills
+    string status "open | closed"
+  }
+  Application {
+    string jobId
+    string studentId
+    number gpaAtApply "snapshot"
+    string resumeUrl "snapshot"
+    string status "submitted | reviewed | accepted | rejected"
+  }
 ```
-/
-├── docs/                   Proposal, architecture diagrams
-├── src/
-│   ├── client/             Frontend
-│   └── server/             API
-├── .env.example
-├── .gitignore
-└── README.md
+
+## Run it with Docker
+
+Prerequisites: Docker Desktop. Nothing else.
+
+```powershell
+Copy-Item .env.example .env
+docker compose -f docker/docker-compose.yml up -d --build
+docker compose -f docker/docker-compose.yml exec api node scripts/seed.js
 ```
 
-The remaining folders from the course starter template (`.github/workflows`,
-`ops`, `tests`) are added when there is something to put in them.
+| Service | URL |
+|------|--------------|
+| Web app | http://localhost:8080 |
+| API and Swagger docs | http://localhost:3000/docs |
+| Grafana dashboard | http://localhost:3001/d/campus-works (admin / admin) |
+| Prometheus | http://localhost:9090 |
 
-## How to Run
+The seed step creates four accounts. The password for all of them is `Password123`.
 
-Only placeholders exist right now. The API stub runs with no dependencies:
+| Email | Role | Notes |
+|------|--------------|--------------|
+| prof@psu.edu | professor | Owns three openings in Computer Science |
+| prof2@psu.edu | professor | Owns one opening in Mathematics |
+| student@psu.edu | student | GPA 3.7, qualifies for three openings |
+| student2@psu.edu | student | GPA 2.8, qualifies for one opening |
 
-```bash
-node src/server/index.js
+LinkedIn sign in and sharing need a LinkedIn developer app. Put its client id and secret in `.env`. Without them the app runs and the LinkedIn buttons return a clear "not configured" message.
+
+Stop everything with `docker compose -f docker/docker-compose.yml down`. Add `-v` to also drop the data.
+
+## Run it for development
+
+Prerequisites: Node.js 22 or newer, and a MongoDB on localhost:27017. The quickest MongoDB is `docker run -d --name mongo-local -p 27017:27017 mongo:8`.
+
+```powershell
+npm install
+Copy-Item .env.example .env
+npm run seed
+npm start
 ```
 
-Then open `src/client/index.html` in a browser.
+In a second terminal:
 
-## Notes
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-Do not commit secrets or API keys. Copy `.env.example` to `.env` for local values.
+Open http://localhost:5173. The dev server proxies `/api` and `/auth` to the API on port 3000.
+
+## Run the tests
+
+Backend, from the repo root. Unit tests need nothing. Integration tests start their own in memory MongoDB.
+
+```powershell
+npm test
+npm run test:coverage
+```
+
+Frontend, from `frontend/`:
+
+```powershell
+npm test
+npm run test:coverage
+```
+
+Both coverage commands fail below 80 percent lines and statements.
+
+## CI pipeline
+
+`.github/workflows/ci.yml` runs on every push and pull request to `main`. Backend and frontend jobs install, audit dependencies at the high level, build, and test with the coverage gate. A package job then builds the API image, starts it next to MongoDB and checks `/health`, and scans it with Trivy. High or critical findings fail the job.
+
+GitHub Actions is disabled by the organization on this repository, so the pipeline runs locally with [act](https://github.com/nektos/act):
+
+```powershell
+act push -W .github/workflows/ci.yml -P ubuntu-latest=catthehacker/ubuntu:act-latest
+```
+
+## Repository layout
+
+| Path | What it holds |
+|------|--------------|
+| `backend/app.js`, `backend/index.js` | Express app and the server entry point |
+| `backend/auth.js` | Local login, JWT, LinkedIn sign in, requireAuth and requireRole |
+| `backend/rules.js` | Business rules: validation, GPA eligibility, status transitions, job filters |
+| `backend/db.js` | Mongoose models and data access |
+| `backend/routes/` | profiles, jobs, applications |
+| `backend/services/linkedin.js` | LinkedIn token exchange, userinfo, and share |
+| `backend/logger.js`, `backend/metrics.js` | Structured logs and Prometheus metrics |
+| `frontend/src/` | React client: api client, auth context, pages, components |
+| `test/`, `frontend/test/` | Backend unit and integration tests, frontend component tests |
+| `docker/` | Dockerfile, compose stack, Prometheus and Grafana config |
+| `scripts/seed.js` | Demo accounts and openings |
+
+## Secrets
+
+`.env` is ignored by git and Docker. `.env.example` lists every key with a placeholder. The LinkedIn secret and the JWT secret never appear in code, images, or logs.
